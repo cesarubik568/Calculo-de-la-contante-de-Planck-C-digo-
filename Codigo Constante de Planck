@@ -1,0 +1,59 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt 
+#Importamos a los tres mosqueteros
+
+e = 1.6*10**-19   #Declaramos el valor del electron
+
+dtexp = {"Colores": ["rojo", "amarillo", "verde", "azul", "violeta"],
+         "Frecuencia (Hz)": [453, 517, 556, 645, 745],
+         "Voltaje (V)": [1.4, 1.5, 2.06, 2.2, 2.57],
+    	 "Carga electron": [e, e, e, e, e],
+         "Electronvolts": [2.24*10**-19, 2.4*10**-19, 3.296*10**-19, 3.52*10**-19, 4.112*10**-19],
+         "h por color": [4.94481*10**-34, 4.64217*10**-34, 5.92806*10**-34, 5.45736*10**-34, 5.51946*10**-34]
+        } #Creamos un diccionaron con los datos experiemntales dados por el equipo experimental.
+
+dt = pd.DataFrame(dtexp)     #Hacemos un DataFrame con los datos del diccionario
+dt = dt.set_index("Colores") #Establecemos como índice los colores.
+
+#dh = dt["h por color"].plot(figsize = (10,7))
+#plt.xlabel("Colores", fontdict={"fontsize": 15})
+#plt.ylabel("h por color", fontdict={"fontsize": 15})
+#dt["h por color"].mean()
+
+#Esta parte del código no es necesaria. Grafica el valor promedio de la constante de Planck por color.
+
+dt2=dt[["Voltaje (V)","Frecuencia (Hz)"]] #Establecemos un nuevo DataFrame con sólo dos columnas
+Y = dt2.iloc[:, 0]                        #Establecemos a Y como la primera columna del DataFrame anterior
+X = dt2.iloc[:, 1]                        #Establecemos a X como la segunda columna del DataFrame anterior
+X = (X/100)*10**14                        #Cambiamos el valor de X    
+plt.scatter(X, Y)                         #Graficamos los puntos.
+
+plt.xlabel("Frecuencia (THz)", fontdict={"fontsize": 15})
+plt.ylabel("Voltaje de frenado (V)", fontdict={"fontsize": 15}) #Hacemos la gráfica bonita.
+
+X_mean = np.mean(X)      #Obtenemos el valor promedio de X
+Y_mean = np.mean(Y)      #Obtenemos el valor promedio de Y
+
+num = 0
+den = 0
+for i in range(len(X)):  #Codigo que representa la ecuación de m para mínimos cuadrados.
+    num += (X[i] - X_mean)*(Y[i] - Y_mean)
+    den += (X[i] - X_mean)**2
+
+
+m = num / den             #Calculamos el valor de m.
+c = Y_mean - m*X_mean     #Calculamos el valor de la abscisa al origen.
+
+print (m, c)              #Imprimimos los valores de m y c
+
+Y_pred = m*X + c          #Establecemos la ecuación de la recta.
+plt.scatter(X, Y)         #Graficamos los puntos.
+plt.plot([min(X), max(X)], [min(Y_pred), max(Y_pred)], color='red')    #Graficamos la recta
+
+h_exp = m*e
+print("El valor de h por minimos cuadrados es: "+str(h_exp))  #Imprimimos el valor obtenido de h.
+
+h_real = 6.63*10**-34
+perError=100-((100*h_exp)/(h_real)) #Calculamos el porcentaje de error.
+print("El porcentaje de aproximacion es de: "+str(perError)) #Imprimimos el valor de error.
